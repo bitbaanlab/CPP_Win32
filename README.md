@@ -2,7 +2,7 @@
 
 [API Documentation](https://malab.bitbaan.com/en/docs/api)
 
-Compiling Dependencies
+Compiling Dependencies:
  * Visual Studio 2015 or higher
 
 
