@@ -478,3 +478,15 @@ EXPORT json::JSON __stdcall get_captcha()
 	json::JSON json_frmdata;
 	return call_api_with_json_input("api/v1/captcha", json_frmdata);
 }
+
+EXPORT json::JSON __stdcall register_user(std::string first_name, std::string last_name, std::string username, std::string email, std::string password, std::string captcha)
+{
+	json::JSON json_frmdata;
+	json_frmdata["firstname"] = first_name;
+	json_frmdata["lastname"] = last_name;
+	json_frmdata["username"] = username;
+	json_frmdata["email"] = email;
+	json_frmdata["password"] = password;
+	json_frmdata["captcha"] = captcha;
+	return call_api_with_json_input("api/v1/user/register", json_frmdata);
+}
