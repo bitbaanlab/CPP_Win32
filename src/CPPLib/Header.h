@@ -21,3 +21,4 @@ EXPORT json::JSON __stdcall delete_comment(int comment_id);
 EXPORT json::JSON __stdcall approve_comment(int comment_id);
 EXPORT json::JSON __stdcall get_captcha();
 EXPORT json::JSON __stdcall register_user(std::string first_name, std::string last_name, std::string username, std::string email, std::string password, std::string captcha);
+EXPORT json::JSON __stdcall get_av_list();

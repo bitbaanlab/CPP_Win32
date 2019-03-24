@@ -490,3 +490,10 @@ EXPORT json::JSON __stdcall register_user(std::string first_name, std::string la
 	json_frmdata["captcha"] = captcha;
 	return call_api_with_json_input("api/v1/user/register", json_frmdata);
 }
+
+EXPORT json::JSON __stdcall get_av_list()
+{
+	json::JSON json_frmdata;
+	json_frmdata["apikey"] = current_apikey;
+	return call_api_with_json_input("api/v1/search/av_list", json_frmdata);
+}
