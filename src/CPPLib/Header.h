@@ -13,3 +13,5 @@ EXPORT json::JSON __stdcall results(std::string file_sha256, int scan_id);
 EXPORT json::JSON __stdcall rescan(std::string file_sha256);
 EXPORT json::JSON __stdcall search_by_hash(std::string hash, int ot = 0, int ob = 0, int page = 0, int per_page = 0);
 EXPORT json::JSON __stdcall search_by_malware_name(std::string malware_name, int ot = 0, int ob = 0, int page = 0, int per_page = 0);
+EXPORT json::JSON __stdcall download_file(std::string hash_value);
+EXPORT json::JSON __stdcall get_comments(std::string sha256, int page = 0, int per_page = 0);

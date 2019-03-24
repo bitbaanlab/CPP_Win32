@@ -417,3 +417,24 @@ EXPORT json::JSON __stdcall search_by_malware_name(std::string malware_name, int
 		json_frmdata["per_page"] = per_page;
 	return call_api_with_json_input("api/v1/search/scan/malware-name", json_frmdata);
 }
+
+
+EXPORT json::JSON __stdcall download_file(std::string hash_value)
+{
+	json::JSON json_frmdata;
+	json_frmdata["hash"] = hash_value;
+	json_frmdata["apikey"] = current_apikey;
+	return call_api_with_json_input("api/v1/file/download", json_frmdata);
+}
+
+EXPORT json::JSON __stdcall get_comments(std::string sha256, int page, int per_page)
+{
+	json::JSON json_frmdata;
+	json_frmdata["sha256"] = sha256;
+	json_frmdata["apikey"] = current_apikey;
+	if (page != 0)
+		json_frmdata["page"] = page;
+	if (per_page != 0)
+		json_frmdata["per_page"] = per_page;
+	return call_api_with_json_input("api/v1/comment", json_frmdata);
+}
