@@ -369,16 +369,21 @@ EXPORT json::JSON __stdcall scan(std::string file_path, std::string file_name, b
 	return call_api_with_form_input("api/v1/scan", json_frmdata, "filedata", file_path);
 }
 
+EXPORT json::JSON __stdcall rescan(std::string file_sha256)
+{
+	json::JSON json_frmdata;
+	json_frmdata["sha256"] = file_sha256;
+	json_frmdata["apikey"] = current_apikey;
+	return call_api_with_json_input("api/v1/rescan", json_frmdata);
+}
+
 EXPORT json::JSON __stdcall results(std::string file_sha256, int scan_id)
 {
 	json::JSON json_frmdata;
 	json_frmdata["sha256"] = file_sha256;
 	json_frmdata["apikey"] = current_apikey;
 	json_frmdata["scan_id"] = scan_id;
-	json::JSON retValue = call_api_with_json_input("api/v1/search/scan/results", json_frmdata);
-	if (retValue["success"].ToBool() == true)
-		current_apikey = retValue["apikey"].ToString();
-	return retValue;
+	return call_api_with_json_input("api/v1/search/scan/results", json_frmdata);
 }
 
 
