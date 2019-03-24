@@ -22,3 +22,4 @@ EXPORT json::JSON __stdcall approve_comment(int comment_id);
 EXPORT json::JSON __stdcall get_captcha();
 EXPORT json::JSON __stdcall register_user(std::string first_name, std::string last_name, std::string username, std::string email, std::string password, std::string captcha);
 EXPORT json::JSON __stdcall get_av_list();
+EXPORT json::JSON __stdcall advanced_search(int scan_id = 0, std::string file_name = "", std::string malware_name = "", std::string hash = "", std::string origin = "", std::string analyzed = "", std::string has_origin = "", int ot = 0, int ob = 0, int page = 0, int per_page = 0);

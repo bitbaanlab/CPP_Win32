@@ -491,6 +491,35 @@ EXPORT json::JSON __stdcall register_user(std::string first_name, std::string la
 	return call_api_with_json_input("api/v1/user/register", json_frmdata);
 }
 
+EXPORT json::JSON __stdcall advanced_search(int scan_id, std::string file_name, std::string malware_name, std::string hash, std::string origin, std::string analyzed, std::string has_origin, int ot, int ob, int page, int per_page)
+{
+	json::JSON json_frmdata;
+	json_frmdata["apikey"] = current_apikey;
+	if (scan_id != 0)
+		json_frmdata["scan_id"] = scan_id;
+	if (file_name.length() == 0)
+		json_frmdata["filename"] = file_name;
+	if (malware_name.length() == 0)
+		json_frmdata["malware_name"] = malware_name;
+	if (hash.length() == 0)
+		json_frmdata["hash"] = hash;
+	if (origin.length() == 0)
+		json_frmdata["origin"] = origin;
+	if (analyzed.length() == 0)
+		json_frmdata["analyzed"] = analyzed;
+	if (has_origin.length() == 0)
+		json_frmdata["has_origin"] = has_origin;
+	if (ot != 0)
+		json_frmdata["ot"] = ot;
+	if (ob != 0)
+		json_frmdata["ob"] = ob;
+	if (page != 0)
+		json_frmdata["page"] = page;
+	if (per_page != 0)
+		json_frmdata["per_page"] = per_page;
+	return call_api_with_json_input("api/v1/search/scan/advanced", json_frmdata);
+}
+
 EXPORT json::JSON __stdcall get_av_list()
 {
 	json::JSON json_frmdata;
