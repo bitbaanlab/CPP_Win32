@@ -15,3 +15,8 @@ EXPORT json::JSON __stdcall search_by_hash(std::string hash, int ot = 0, int ob 
 EXPORT json::JSON __stdcall search_by_malware_name(std::string malware_name, int ot = 0, int ob = 0, int page = 0, int per_page = 0);
 EXPORT json::JSON __stdcall download_file(std::string hash_value);
 EXPORT json::JSON __stdcall get_comments(std::string sha256, int page = 0, int per_page = 0);
+EXPORT json::JSON __stdcall add_comment(std::string sha256, std::string description);
+EXPORT json::JSON __stdcall edit_comment(int comment_id, std::string new_description);
+EXPORT json::JSON __stdcall delete_comment(int comment_id);
+EXPORT json::JSON __stdcall approve_comment(int comment_id);
+EXPORT json::JSON __stdcall get_captcha();

@@ -438,3 +438,43 @@ EXPORT json::JSON __stdcall get_comments(std::string sha256, int page, int per_p
 		json_frmdata["per_page"] = per_page;
 	return call_api_with_json_input("api/v1/comment", json_frmdata);
 }
+
+EXPORT json::JSON __stdcall add_comment(std::string sha256, std::string description)
+{
+	json::JSON json_frmdata;
+	json_frmdata["sha256"] = sha256;
+	json_frmdata["description"] = description;
+	json_frmdata["apikey"] = current_apikey;
+	return call_api_with_json_input("api/v1/comment/add", json_frmdata);
+}
+
+EXPORT json::JSON __stdcall edit_comment(int comment_id, std::string new_description)
+{
+	json::JSON json_frmdata;
+	json_frmdata["comment_id"] = comment_id;
+	json_frmdata["description"] = new_description;
+	json_frmdata["apikey"] = current_apikey;
+	return call_api_with_json_input("api/v1/comment/edit", json_frmdata);
+}
+
+EXPORT json::JSON __stdcall delete_comment(int comment_id)
+{
+	json::JSON json_frmdata;
+	json_frmdata["comment_id"] = comment_id;
+	json_frmdata["apikey"] = current_apikey;
+	return call_api_with_json_input("api/v1/comment/delete", json_frmdata);
+}
+
+EXPORT json::JSON __stdcall approve_comment(int comment_id)
+{
+	json::JSON json_frmdata;
+	json_frmdata["comment_id"] = comment_id;
+	json_frmdata["apikey"] = current_apikey;
+	return call_api_with_json_input("api/v1/comment/approve", json_frmdata);
+}
+
+EXPORT json::JSON __stdcall get_captcha()
+{
+	json::JSON json_frmdata;
+	return call_api_with_json_input("api/v1/captcha", json_frmdata);
+}
