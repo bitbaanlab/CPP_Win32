@@ -386,4 +386,34 @@ EXPORT json::JSON __stdcall results(std::string file_sha256, int scan_id)
 	return call_api_with_json_input("api/v1/search/scan/results", json_frmdata);
 }
 
+EXPORT json::JSON __stdcall search_by_hash(std::string hash, int ot, int ob, int page, int per_page)
+{
+	json::JSON json_frmdata;
+	json_frmdata["hash"] = hash;
+	json_frmdata["apikey"] = current_apikey;
+	if(ot != 0)
+		json_frmdata["ot"] = ot;
+	if (ob != 0)
+		json_frmdata["ob"] = ob;
+	if (page != 0)
+		json_frmdata["page"] = page;
+	if (per_page != 0)
+		json_frmdata["per_page"] = per_page;
+	return call_api_with_json_input("api/v1/search/scan/hash", json_frmdata);
+}
 
+EXPORT json::JSON __stdcall search_by_malware_name(std::string malware_name, int ot, int ob, int page, int per_page)
+{
+	json::JSON json_frmdata;
+	json_frmdata["malware_name"] = malware_name;
+	json_frmdata["apikey"] = current_apikey;
+	if (ot != 0)
+		json_frmdata["ot"] = ot;
+	if (ob != 0)
+		json_frmdata["ob"] = ob;
+	if (page != 0)
+		json_frmdata["page"] = page;
+	if (per_page != 0)
+		json_frmdata["per_page"] = per_page;
+	return call_api_with_json_input("api/v1/search/scan/malware-name", json_frmdata);
+}
