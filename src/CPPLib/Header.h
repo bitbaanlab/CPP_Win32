@@ -7,6 +7,8 @@
 #define EXPORT __declspec (dllexport)
 
 EXPORT json::JSON __stdcall malab_login(std::string server_address, std::string email, std::string password);
+EXPORT void __stdcall malab_set_apikey(std::string api_key);
+EXPORT void __stdcall malab_set_serveraddress(std::string server_address);
 EXPORT json::JSON __stdcall malab_scan(std::string file_path, std::string file_name, bool is_private = false, std::string file_origin = "");
 EXPORT std::string __stdcall malab_get_sha256(std::string file_path);
 EXPORT json::JSON __stdcall malab_results(std::string file_sha256, int scan_id);

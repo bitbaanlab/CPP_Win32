@@ -345,15 +345,25 @@ json::JSON __stdcall call_api_with_form_input(std::string api, json::JSON data_i
 
 }
 
-json::JSON __stdcall malab_login(std::string server_address, std::string email, std::string password)
+void __stdcall malab_set_apikey(std::string api_key)
+{
+	current_apikey = api_key;
+}
+
+void __stdcall malab_set_serveraddress(std::string server_address)
 {
 	current_server_address = server_address;
+}
+
+json::JSON __stdcall malab_login(std::string server_address, std::string email, std::string password)
+{
+	malab_set_serveraddress(server_address);
 	json::JSON json_frmdata;
 	json_frmdata["email"] = email;
 	json_frmdata["password"] = password;
 	json::JSON retValue = call_api_with_json_input("api/v1/user/login", json_frmdata);
 	if (retValue["success"].ToBool() == true)
-		current_apikey = retValue["apikey"].ToString();
+		malab_set_apikey(retValue["apikey"].ToString());
 	return retValue;
 }
 
