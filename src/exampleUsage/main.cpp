@@ -33,7 +33,7 @@ void main()
 	std::getline(std::cin,email);
 	std::cout << "Please insert your password: ";
 	std::getline(std::cin, password);
-	json::JSON returnValue = login(serveraddress, email, password);
+	json::JSON returnValue = malab_login(serveraddress, email, password);
 	if (returnValue["success"].ToBool() == true)
 		std::cout << "You are logged in successfully." << std::endl;
 	else
@@ -45,16 +45,16 @@ void main()
 	std::cout << "Please enter the path of file to scan: ";
 	std::getline(std::cin, file_path);
 	std::string file_name = PathFindFileNameA(file_path.c_str());
-	returnValue = scan(file_path, file_name);
+	returnValue = malab_scan(file_path, file_name);
 	if (returnValue["success"].ToBool() == true)
 	{
 		//getting scan results:
 		bool is_finished = false;
-		std::string file_hash = get_sha256(file_path);
+		std::string file_hash = malab_get_sha256(file_path);
 		DWORD scan_id = returnValue["scan_id"].ToInt();
 		while (is_finished == false) {
 			std::cout << "Waiting for getting results...";
-			returnValue = results(file_hash, scan_id);
+			returnValue = malab_results(file_hash, scan_id);
 			if (returnValue["success"].ToBool() == false) {
 				std::cout << "error code " << returnValue["error_code"] << " occurred." << std::endl;
 				return;

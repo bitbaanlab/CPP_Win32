@@ -3,7 +3,7 @@
 std::string current_server_address = "";
 std::string current_apikey = "";
 
-EXPORT std::string __stdcall get_sha256(std::string file_path)
+std::string __stdcall malab_get_sha256(std::string file_path)
 {
 	std::string out_file_sha256 = "";
 	BOOL bResult = FALSE;
@@ -171,9 +171,8 @@ json::JSON __stdcall call_api_with_json_input(std::string api, json::JSON json_i
 	} while (data_available != 0);
 	json::JSON obj;
 	obj = json::JSON::Load(data_response);
-	bool success_code;
 	if (obj.hasKey("success") == true)
-		success_code = obj["success"].ToBool();
+		return obj;
 	else
 	{
 		free(data_response);
@@ -184,7 +183,7 @@ json::JSON __stdcall call_api_with_json_input(std::string api, json::JSON json_i
 		return_json["error_code"] = 900; //unknown error code
 		return return_json;
 	}
-	return obj;
+	
 }
 
 json::JSON __stdcall call_api_with_form_input(std::string api, json::JSON data_input, std::string file_param_name, std::string file_path)
@@ -331,21 +330,22 @@ json::JSON __stdcall call_api_with_form_input(std::string api, json::JSON data_i
 	} while (data_available != 0);
 	json::JSON obj;
 	obj = json::JSON::Load(data_response);
-	bool success_code;
 	if (obj.hasKey("success") == true)
-		success_code = obj["success"].ToBool();
+		return obj;
 	else
 	{
 		free(data_response);
 		InternetCloseHandle(site_connection);
 		InternetCloseHandle(http_connection);
 		InternetCloseHandle(internet_handle);
-		return 900;
+		return_json["success"] = false;
+		return_json["error_code"] = 900; //unknown error code
+		return return_json;
 	}
-	return obj;
+
 }
 
-EXPORT json::JSON __stdcall login(std::string server_address, std::string email, std::string password)
+json::JSON __stdcall malab_login(std::string server_address, std::string email, std::string password)
 {
 	current_server_address = server_address;
 	json::JSON json_frmdata;
@@ -357,7 +357,7 @@ EXPORT json::JSON __stdcall login(std::string server_address, std::string email,
 	return retValue;
 }
 
-EXPORT json::JSON __stdcall scan(std::string file_path, std::string file_name, bool is_private, std::string file_origin)
+json::JSON __stdcall malab_scan(std::string file_path, std::string file_name, bool is_private, std::string file_origin)
 {
 	json::JSON json_frmdata;
 	json_frmdata["filename"] = file_name;
@@ -369,7 +369,7 @@ EXPORT json::JSON __stdcall scan(std::string file_path, std::string file_name, b
 	return call_api_with_form_input("api/v1/scan", json_frmdata, "filedata", file_path);
 }
 
-EXPORT json::JSON __stdcall rescan(std::string file_sha256)
+json::JSON __stdcall malab_rescan(std::string file_sha256)
 {
 	json::JSON json_frmdata;
 	json_frmdata["sha256"] = file_sha256;
@@ -377,7 +377,7 @@ EXPORT json::JSON __stdcall rescan(std::string file_sha256)
 	return call_api_with_json_input("api/v1/rescan", json_frmdata);
 }
 
-EXPORT json::JSON __stdcall results(std::string file_sha256, int scan_id)
+json::JSON __stdcall malab_results(std::string file_sha256, int scan_id)
 {
 	json::JSON json_frmdata;
 	json_frmdata["sha256"] = file_sha256;
@@ -386,7 +386,7 @@ EXPORT json::JSON __stdcall results(std::string file_sha256, int scan_id)
 	return call_api_with_json_input("api/v1/search/scan/results", json_frmdata);
 }
 
-EXPORT json::JSON __stdcall search_by_hash(std::string hash, int ot, int ob, int page, int per_page)
+json::JSON __stdcall malab_search_by_hash(std::string hash, int ot, int ob, int page, int per_page)
 {
 	json::JSON json_frmdata;
 	json_frmdata["hash"] = hash;
@@ -402,7 +402,7 @@ EXPORT json::JSON __stdcall search_by_hash(std::string hash, int ot, int ob, int
 	return call_api_with_json_input("api/v1/search/scan/hash", json_frmdata);
 }
 
-EXPORT json::JSON __stdcall search_by_malware_name(std::string malware_name, int ot, int ob, int page, int per_page)
+json::JSON __stdcall malab_search_by_malware_name(std::string malware_name, int ot, int ob, int page, int per_page)
 {
 	json::JSON json_frmdata;
 	json_frmdata["malware_name"] = malware_name;
@@ -419,7 +419,7 @@ EXPORT json::JSON __stdcall search_by_malware_name(std::string malware_name, int
 }
 
 
-EXPORT json::JSON __stdcall download_file(std::string hash_value)
+json::JSON __stdcall malab_download_file(std::string hash_value)
 {
 	json::JSON json_frmdata;
 	json_frmdata["hash"] = hash_value;
@@ -427,7 +427,7 @@ EXPORT json::JSON __stdcall download_file(std::string hash_value)
 	return call_api_with_json_input("api/v1/file/download", json_frmdata);
 }
 
-EXPORT json::JSON __stdcall get_comments(std::string sha256, int page, int per_page)
+json::JSON __stdcall malab_get_comments(std::string sha256, int page, int per_page)
 {
 	json::JSON json_frmdata;
 	json_frmdata["sha256"] = sha256;
@@ -439,7 +439,7 @@ EXPORT json::JSON __stdcall get_comments(std::string sha256, int page, int per_p
 	return call_api_with_json_input("api/v1/comment", json_frmdata);
 }
 
-EXPORT json::JSON __stdcall add_comment(std::string sha256, std::string description)
+json::JSON __stdcall malab_add_comment(std::string sha256, std::string description)
 {
 	json::JSON json_frmdata;
 	json_frmdata["sha256"] = sha256;
@@ -448,7 +448,7 @@ EXPORT json::JSON __stdcall add_comment(std::string sha256, std::string descript
 	return call_api_with_json_input("api/v1/comment/add", json_frmdata);
 }
 
-EXPORT json::JSON __stdcall edit_comment(int comment_id, std::string new_description)
+json::JSON __stdcall malab_edit_comment(int comment_id, std::string new_description)
 {
 	json::JSON json_frmdata;
 	json_frmdata["comment_id"] = comment_id;
@@ -457,7 +457,7 @@ EXPORT json::JSON __stdcall edit_comment(int comment_id, std::string new_descrip
 	return call_api_with_json_input("api/v1/comment/edit", json_frmdata);
 }
 
-EXPORT json::JSON __stdcall delete_comment(int comment_id)
+json::JSON __stdcall malab_delete_comment(int comment_id)
 {
 	json::JSON json_frmdata;
 	json_frmdata["comment_id"] = comment_id;
@@ -465,7 +465,7 @@ EXPORT json::JSON __stdcall delete_comment(int comment_id)
 	return call_api_with_json_input("api/v1/comment/delete", json_frmdata);
 }
 
-EXPORT json::JSON __stdcall approve_comment(int comment_id)
+json::JSON __stdcall malab_approve_comment(int comment_id)
 {
 	json::JSON json_frmdata;
 	json_frmdata["comment_id"] = comment_id;
@@ -473,13 +473,13 @@ EXPORT json::JSON __stdcall approve_comment(int comment_id)
 	return call_api_with_json_input("api/v1/comment/approve", json_frmdata);
 }
 
-EXPORT json::JSON __stdcall get_captcha()
+json::JSON __stdcall malab_get_captcha()
 {
 	json::JSON json_frmdata;
 	return call_api_with_json_input("api/v1/captcha", json_frmdata);
 }
 
-EXPORT json::JSON __stdcall register_user(std::string first_name, std::string last_name, std::string username, std::string email, std::string password, std::string captcha)
+json::JSON __stdcall malab_register_user(std::string first_name, std::string last_name, std::string username, std::string email, std::string password, std::string captcha)
 {
 	json::JSON json_frmdata;
 	json_frmdata["firstname"] = first_name;
@@ -491,7 +491,7 @@ EXPORT json::JSON __stdcall register_user(std::string first_name, std::string la
 	return call_api_with_json_input("api/v1/user/register", json_frmdata);
 }
 
-EXPORT json::JSON __stdcall advanced_search(int scan_id, std::string file_name, std::string malware_name, std::string hash, std::string origin, std::string analyzed, std::string has_origin, int ot, int ob, int page, int per_page)
+json::JSON __stdcall malab_advanced_search(int scan_id, std::string file_name, std::string malware_name, std::string hash, std::string origin, std::string analyzed, std::string has_origin, int ot, int ob, int page, int per_page)
 {
 	json::JSON json_frmdata;
 	json_frmdata["apikey"] = current_apikey;
@@ -520,7 +520,7 @@ EXPORT json::JSON __stdcall advanced_search(int scan_id, std::string file_name, 
 	return call_api_with_json_input("api/v1/search/scan/advanced", json_frmdata);
 }
 
-EXPORT json::JSON __stdcall get_av_list()
+json::JSON __stdcall malab_get_av_list()
 {
 	json::JSON json_frmdata;
 	json_frmdata["apikey"] = current_apikey;
