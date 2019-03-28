@@ -507,17 +507,17 @@ json::JSON __stdcall malab_advanced_search(int scan_id, std::string file_name, s
 	json_frmdata["apikey"] = current_apikey;
 	if (scan_id != 0)
 		json_frmdata["scan_id"] = scan_id;
-	if (file_name.length() == 0)
+	if (file_name.length() != 0)
 		json_frmdata["filename"] = file_name;
-	if (malware_name.length() == 0)
+	if (malware_name.length() != 0)
 		json_frmdata["malware_name"] = malware_name;
-	if (hash.length() == 0)
+	if (hash.length() != 0)
 		json_frmdata["hash"] = hash;
-	if (origin.length() == 0)
+	if (origin.length() != 0)
 		json_frmdata["origin"] = origin;
-	if (analyzed.length() == 0)
+	if (analyzed.length() != 0)
 		json_frmdata["analyzed"] = analyzed;
-	if (has_origin.length() == 0)
+	if (has_origin.length() != 0)
 		json_frmdata["has_origin"] = has_origin;
 	if (ot != 0)
 		json_frmdata["ot"] = ot;
