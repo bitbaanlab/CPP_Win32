@@ -25,56 +25,65 @@ void main()
 	std::cout << "|____/|_|\\__|____/ \\__,_|\\__,_|_| |_| |_|  |_/_/   \\_\\_____\\__,_|_.__/ \n" << std::endl;
 
 	std::string email = "", password = "", serveraddress = "", file_path="";
-	std::cout << "Please insert API server address [Default=https://malab.bitbaan.com]: ";
+	std::cout << "Please insert API server address [Default=https://apimalab.bitbaan.com]: ";
 	std::getline(std::cin, serveraddress);
 	if (serveraddress.length() == 0)
-		serveraddress = "https://malab.bitbaan.com";
+		serveraddress = "https://apimalab.bitbaan.com";
 	std::cout << "Please insert email address: ";
 	std::getline(std::cin,email);
 	std::cout << "Please insert your password: ";
 	std::getline(std::cin, password);
-	json::JSON returnValue = malab_login(serveraddress, email, password);
+	MALabLib* malab = new MALabLib(serveraddress);
+	json::JSON input_json;
+	input_json["email"] = email;
+	input_json["password"] = password;
+	json::JSON returnValue = malab->call_with_json_input("user/login", input_json);
 	if (returnValue["success"].ToBool() == true)
 		std::cout << "You are logged in successfully." << std::endl;
 	else
 	{
-		std::cout << "error code " << returnValue["error_code"] <<  " occurred." << std::endl;
+		std::cout << malab->get_error(returnValue);
 		_getch();
 		return;
 	}
-	std::cout << "Please enter the path of file to scan: ";
+	std::string apikey = returnValue["apikey"].ToString();
+	std::cout << "please enter the path of file to scan: ";
 	std::getline(std::cin, file_path);
 	std::string file_name = PathFindFileNameA(file_path.c_str());
-	returnValue = malab_scan(file_path, file_name);
+	input_json["file_name"] = file_name;
+	input_json["apikey"] = apikey;
+	returnValue = malab->call_with_form_input("file/scan", input_json, "file_data", file_path);
 	if (returnValue["success"].ToBool() == true)
 	{
 		//getting scan results:
 		bool is_finished = false;
-		std::string file_hash = malab_get_sha256(file_path);
+		std::string file_hash = malab->get_sha256(file_path);
 		DWORD scan_id = returnValue["scan_id"].ToInt();
 		while (is_finished == false) {
-			std::cout << "Waiting for getting results...";
-			returnValue = malab_results(file_hash, scan_id);
+			std::cout << "waiting for getting results...";
+			input_json["hash"] = file_hash;
+			input_json["apikey"] = apikey;
+			returnValue = malab->call_with_json_input("file/scan/result/get", input_json);
 			if (returnValue["success"].ToBool() == false) {
-				std::cout << "error code " << returnValue["error_code"] << " occurred." << std::endl;
+				std::cout << malab->get_error(returnValue);
 				return;
 			}
 			cls(); //clear screen
-			for (int i = 0; i< returnValue["results"].size(); i++)
+			for (int i = 0; i< returnValue["scan"]["results"].size(); i++)
 			{
-				json::JSON current_av_result = returnValue["results"][i];
-				if (current_av_result["result_state"].ToInt() == 32) // file is malware
-					std::cout << current_av_result["av_name"].ToString() << " ==> " << current_av_result["virus_name"].ToString() << std::endl;
-				else if(current_av_result["result_state"].ToInt() == 33) // file is clean
-					std::cout << current_av_result["av_name"].ToString() << " ==> " << "Clean" << std::endl;
+				json::JSON current_av_result = returnValue["scan"]["results"][i];
+				if (current_av_result["result"].ToString() == "malware") // file is malware
+					std::cout << current_av_result["av_name"].ToString() << " ==> " << current_av_result["malware_name"].ToString() << std::endl;
+				else if(current_av_result["result"].ToString() == "clean") // file is clean
+					std::cout << current_av_result["av_name"].ToString() << " ==> " << "clean" << std::endl;
 			}
-			is_finished = returnValue["is_finished"].ToBool();
+			is_finished = returnValue["scan"]["is_finished"].ToBool();
 			Sleep(2000);
 		}	
 	}
 	else
 	{
-		std::cout << "error code " << returnValue["error_code"] << " occured." << std::endl;
+		std::cout << malab->get_error(returnValue);
 		_getch();
 		return;
 	}
