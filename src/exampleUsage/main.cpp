@@ -24,18 +24,18 @@ void main()
 	std::cout << "| |_) | | |_| |_) | (_| | (_| | | | | | |  | |/ ___ \\| |__| (_| | |_) |" << std::endl;
 	std::cout << "|____/|_|\\__|____/ \\__,_|\\__,_|_| |_| |_|  |_/_/   \\_\\_____\\__,_|_.__/ \n" << std::endl;
 
-	std::string email = "", password = "", serveraddress = "", file_path="";
+	std::string identifier = "", password = "", serveraddress = "", file_path="";
 	std::cout << "Please insert API server address [Default=https://apimalab.bitbaan.com]: ";
 	std::getline(std::cin, serveraddress);
 	if (serveraddress.length() == 0)
 		serveraddress = "https://apimalab.bitbaan.com";
-	std::cout << "Please insert email address: ";
-	std::getline(std::cin,email);
+	std::cout << "Please insert identifier (username, phone no or email): ";
+	std::getline(std::cin, identifier);
 	std::cout << "Please insert your password: ";
 	std::getline(std::cin, password);
 	MALabLib* malab = new MALabLib(serveraddress);
 	json::JSON input_json;
-	input_json["email"] = email;
+	input_json["identifier"] = identifier;
 	input_json["password"] = password;
 	json::JSON returnValue = malab->call_with_json_input("user/login", input_json);
 	if (returnValue["success"].ToBool() == true)
