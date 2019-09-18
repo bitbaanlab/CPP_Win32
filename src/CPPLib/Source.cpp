@@ -1,9 +1,7 @@
 #include "Header.h"
 
-std::string current_server_address = "";
-std::string current_apikey = "";
 
-std::string __stdcall malab_get_sha256(std::string file_path)
+std::string __stdcall MALabLib::get_sha256(std::string file_path)
 {
 	std::string out_file_sha256 = "";
 	BOOL bResult = FALSE;
@@ -71,7 +69,30 @@ std::string __stdcall malab_get_sha256(std::string file_path)
 	return out_file_sha256;
 }
 
-json::JSON __stdcall call_api_with_json_input(std::string api, json::JSON json_input)
+std::string __stdcall MALabLib::get_error(json::JSON json_input) {
+	std::string returnValue = "Error!\n";
+	if (json_input.hasKey("error_code"))
+		returnValue += (std::string("Error code: ") + std::to_string(json_input["error_code"].ToInt()) + "\n");
+	if (json_input.hasKey("error_desc"))
+		returnValue += (std::string("Error description: ") + json_input["error_desc"].ToString() + "\n");
+	if (json_input.hasKey("error_details_code"))
+		returnValue += (std::string("Error details code: ") + std::to_string(json_input["error_details_code"].ToInt()) + "\n");
+	if (json_input.hasKey("error_details_desc"))
+		returnValue += (std::string("Error details description: ") + json_input["error_details_desc"].ToString() + "\n");
+	if (json_input.hasKey("status_code"))
+	{
+		returnValue += (std::string("Status code: ") + std::to_string(json_input["status_code"].ToInt()) + "\n");
+		if (json_input["status_code"].ToInt() == 422 && json_input.hasKey("error"))
+		{
+			auto data_all = json_input["error"].ObjectRange();
+			for (auto iterator = data_all.begin(), e = data_all.end(); iterator != e; ++iterator)
+				returnValue += (std::string("Validation in: ") + iterator->first + ", " + iterator->second.ToString() + "\n");
+		}
+	}
+	return returnValue;
+}
+
+json::JSON __stdcall MALabLib::call_with_json_input(std::string api, json::JSON json_input)
 {
 	bool use_https = FALSE;
 	json::JSON return_json;
@@ -110,7 +131,7 @@ json::JSON __stdcall call_api_with_json_input(std::string api, json::JSON json_i
 	int open_request_flags = INTERNET_FLAG_RELOAD;
 	if (use_https == TRUE)
 		open_request_flags += INTERNET_FLAG_SECURE;
-	HINTERNET site_connection = HttpOpenRequestA(http_connection, "POST", ("/" + api).c_str(), NULL, NULL, NULL, open_request_flags, 0);
+	HINTERNET site_connection = HttpOpenRequestA(http_connection, "POST", ("/malab/v1/" + api).c_str(), NULL, NULL, NULL, open_request_flags, 0);
 	if (site_connection == NULL)
 	{
 		InternetCloseHandle(http_connection);
@@ -183,10 +204,9 @@ json::JSON __stdcall call_api_with_json_input(std::string api, json::JSON json_i
 		return_json["error_code"] = 900; //unknown error code
 		return return_json;
 	}
-	
 }
 
-json::JSON __stdcall call_api_with_form_input(std::string api, json::JSON data_input, std::string file_param_name, std::string file_path)
+json::JSON __stdcall MALabLib::call_with_form_input(std::string api, json::JSON data_input, std::string file_param_name, std::string file_path)
 {
 	bool use_https = FALSE;
 	json::JSON return_json;
@@ -225,7 +245,7 @@ json::JSON __stdcall call_api_with_form_input(std::string api, json::JSON data_i
 	int open_request_flags = INTERNET_FLAG_RELOAD;
 	if (use_https == TRUE)
 		open_request_flags += INTERNET_FLAG_SECURE;
-	HINTERNET site_connection = HttpOpenRequestA(http_connection, "POST", ("/" + api).c_str(), NULL, NULL, NULL, open_request_flags, 0);
+	HINTERNET site_connection = HttpOpenRequestA(http_connection, "POST", ("/malab/v1/" + api).c_str(), NULL, NULL, NULL, open_request_flags, 0);
 	if (site_connection == NULL)
 	{
 		InternetCloseHandle(http_connection);
@@ -272,7 +292,7 @@ json::JSON __stdcall call_api_with_form_input(std::string api, json::JSON data_i
 		return return_json;
 	}
 	DWORD data_to_send_size = frmdata_begin.length() + frmdata_end.length() + file_size;
-	PBYTE data_to_send = (PBYTE)malloc(data_to_send_size+1);
+	PBYTE data_to_send = (PBYTE)malloc(data_to_send_size + 1);
 	ZeroMemory(data_to_send, data_to_send_size + 1);
 	memcpy_s(data_to_send, data_to_send_size, frmdata_begin.c_str(), frmdata_begin.length());
 	memcpy_s(data_to_send + frmdata_begin.length(), data_to_send_size - frmdata_begin.length(), file_data, file_size);
@@ -345,194 +365,3 @@ json::JSON __stdcall call_api_with_form_input(std::string api, json::JSON data_i
 
 }
 
-void __stdcall malab_set_apikey(std::string api_key)
-{
-	current_apikey = api_key;
-}
-
-void __stdcall malab_set_serveraddress(std::string server_address)
-{
-	current_server_address = server_address;
-}
-
-json::JSON __stdcall malab_login(std::string server_address, std::string email, std::string password)
-{
-	malab_set_serveraddress(server_address);
-	json::JSON json_frmdata;
-	json_frmdata["email"] = email;
-	json_frmdata["password"] = password;
-	json::JSON retValue = call_api_with_json_input("api/v1/user/login", json_frmdata);
-	if (retValue["success"].ToBool() == true)
-		malab_set_apikey(retValue["apikey"].ToString());
-	return retValue;
-}
-
-json::JSON __stdcall malab_scan(std::string file_path, std::string file_name, bool is_private, std::string file_origin)
-{
-	json::JSON json_frmdata;
-	json_frmdata["filename"] = file_name;
-	json_frmdata["apikey"] = current_apikey;
-	if (is_private == true)
-		json_frmdata["is_private"] = true;
-	if (file_origin.length() != 0)
-		json_frmdata["fileorigin"] = file_origin;
-	return call_api_with_form_input("api/v1/scan", json_frmdata, "filedata", file_path);
-}
-
-json::JSON __stdcall malab_rescan(std::string file_sha256)
-{
-	json::JSON json_frmdata;
-	json_frmdata["sha256"] = file_sha256;
-	json_frmdata["apikey"] = current_apikey;
-	return call_api_with_json_input("api/v1/rescan", json_frmdata);
-}
-
-json::JSON __stdcall malab_results(std::string file_sha256, int scan_id)
-{
-	json::JSON json_frmdata;
-	json_frmdata["sha256"] = file_sha256;
-	json_frmdata["apikey"] = current_apikey;
-	json_frmdata["scan_id"] = scan_id;
-	return call_api_with_json_input("api/v1/search/scan/results", json_frmdata);
-}
-
-json::JSON __stdcall malab_search_by_hash(std::string hash, int ot, int ob, int page, int per_page)
-{
-	json::JSON json_frmdata;
-	json_frmdata["hash"] = hash;
-	json_frmdata["apikey"] = current_apikey;
-	if(ot != 0)
-		json_frmdata["ot"] = ot;
-	if (ob != 0)
-		json_frmdata["ob"] = ob;
-	if (page != 0)
-		json_frmdata["page"] = page;
-	if (per_page != 0)
-		json_frmdata["per_page"] = per_page;
-	return call_api_with_json_input("api/v1/search/scan/hash", json_frmdata);
-}
-
-json::JSON __stdcall malab_search_by_malware_name(std::string malware_name, int ot, int ob, int page, int per_page)
-{
-	json::JSON json_frmdata;
-	json_frmdata["malware_name"] = malware_name;
-	json_frmdata["apikey"] = current_apikey;
-	if (ot != 0)
-		json_frmdata["ot"] = ot;
-	if (ob != 0)
-		json_frmdata["ob"] = ob;
-	if (page != 0)
-		json_frmdata["page"] = page;
-	if (per_page != 0)
-		json_frmdata["per_page"] = per_page;
-	return call_api_with_json_input("api/v1/search/scan/malware-name", json_frmdata);
-}
-
-
-json::JSON __stdcall malab_download_file(std::string hash_value)
-{
-	json::JSON json_frmdata;
-	json_frmdata["hash"] = hash_value;
-	json_frmdata["apikey"] = current_apikey;
-	return call_api_with_json_input("api/v1/file/download", json_frmdata);
-}
-
-json::JSON __stdcall malab_get_comments(std::string sha256, int page, int per_page)
-{
-	json::JSON json_frmdata;
-	json_frmdata["sha256"] = sha256;
-	json_frmdata["apikey"] = current_apikey;
-	if (page != 0)
-		json_frmdata["page"] = page;
-	if (per_page != 0)
-		json_frmdata["per_page"] = per_page;
-	return call_api_with_json_input("api/v1/comment", json_frmdata);
-}
-
-json::JSON __stdcall malab_add_comment(std::string sha256, std::string description)
-{
-	json::JSON json_frmdata;
-	json_frmdata["sha256"] = sha256;
-	json_frmdata["description"] = description;
-	json_frmdata["apikey"] = current_apikey;
-	return call_api_with_json_input("api/v1/comment/add", json_frmdata);
-}
-
-json::JSON __stdcall malab_edit_comment(int comment_id, std::string new_description)
-{
-	json::JSON json_frmdata;
-	json_frmdata["comment_id"] = comment_id;
-	json_frmdata["description"] = new_description;
-	json_frmdata["apikey"] = current_apikey;
-	return call_api_with_json_input("api/v1/comment/edit", json_frmdata);
-}
-
-json::JSON __stdcall malab_delete_comment(int comment_id)
-{
-	json::JSON json_frmdata;
-	json_frmdata["comment_id"] = comment_id;
-	json_frmdata["apikey"] = current_apikey;
-	return call_api_with_json_input("api/v1/comment/delete", json_frmdata);
-}
-
-json::JSON __stdcall malab_approve_comment(int comment_id)
-{
-	json::JSON json_frmdata;
-	json_frmdata["comment_id"] = comment_id;
-	json_frmdata["apikey"] = current_apikey;
-	return call_api_with_json_input("api/v1/comment/approve", json_frmdata);
-}
-
-json::JSON __stdcall malab_get_captcha()
-{
-	json::JSON json_frmdata;
-	return call_api_with_json_input("api/v1/captcha", json_frmdata);
-}
-
-json::JSON __stdcall malab_register_user(std::string first_name, std::string last_name, std::string username, std::string email, std::string password, std::string captcha)
-{
-	json::JSON json_frmdata;
-	json_frmdata["firstname"] = first_name;
-	json_frmdata["lastname"] = last_name;
-	json_frmdata["username"] = username;
-	json_frmdata["email"] = email;
-	json_frmdata["password"] = password;
-	json_frmdata["captcha"] = captcha;
-	return call_api_with_json_input("api/v1/user/register", json_frmdata);
-}
-
-json::JSON __stdcall malab_advanced_search(int scan_id, std::string file_name, std::string malware_name, std::string hash, std::string origin, std::string analyzed, std::string has_origin, int ot, int ob, int page, int per_page)
-{
-	json::JSON json_frmdata;
-	json_frmdata["apikey"] = current_apikey;
-	if (scan_id != 0)
-		json_frmdata["scan_id"] = scan_id;
-	if (file_name.length() != 0)
-		json_frmdata["filename"] = file_name;
-	if (malware_name.length() != 0)
-		json_frmdata["malware_name"] = malware_name;
-	if (hash.length() != 0)
-		json_frmdata["hash"] = hash;
-	if (origin.length() != 0)
-		json_frmdata["origin"] = origin;
-	if (analyzed.length() != 0)
-		json_frmdata["analyzed"] = analyzed;
-	if (has_origin.length() != 0)
-		json_frmdata["has_origin"] = has_origin;
-	if (ot != 0)
-		json_frmdata["ot"] = ot;
-	if (ob != 0)
-		json_frmdata["ob"] = ob;
-	if (page != 0)
-		json_frmdata["page"] = page;
-	if (per_page != 0)
-		json_frmdata["per_page"] = per_page;
-	return call_api_with_json_input("api/v1/search/scan/advanced", json_frmdata);
-}
-
-json::JSON __stdcall malab_get_av_list()
-{
-	json::JSON json_frmdata;
-	json_frmdata["apikey"] = current_apikey;
-	return call_api_with_json_input("api/v1/search/av_list", json_frmdata);
-}
