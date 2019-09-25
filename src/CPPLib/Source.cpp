@@ -192,14 +192,15 @@ json::JSON __stdcall MALabLib::call_with_json_input(std::string api, json::JSON 
 	} while (data_available != 0);
 	json::JSON obj;
 	obj = json::JSON::Load(data_response);
+	free(data_response);
+	InternetCloseHandle(site_connection);
+	InternetCloseHandle(http_connection);
+	InternetCloseHandle(internet_handle);
 	if (obj.hasKey("success") == true)
-		return obj;
+		return obj;	
 	else
 	{
-		free(data_response);
-		InternetCloseHandle(site_connection);
-		InternetCloseHandle(http_connection);
-		InternetCloseHandle(internet_handle);
+
 		return_json["success"] = false;
 		return_json["error_code"] = 900; //unknown error code
 		return return_json;
@@ -350,14 +351,14 @@ json::JSON __stdcall MALabLib::call_with_form_input(std::string api, json::JSON 
 	} while (data_available != 0);
 	json::JSON obj;
 	obj = json::JSON::Load(data_response);
+	free(data_response);
+	InternetCloseHandle(site_connection);
+	InternetCloseHandle(http_connection);
+	InternetCloseHandle(internet_handle);
 	if (obj.hasKey("success") == true)
 		return obj;
 	else
 	{
-		free(data_response);
-		InternetCloseHandle(site_connection);
-		InternetCloseHandle(http_connection);
-		InternetCloseHandle(internet_handle);
 		return_json["success"] = false;
 		return_json["error_code"] = 900; //unknown error code
 		return return_json;
